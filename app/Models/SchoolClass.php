@@ -12,7 +12,27 @@ class SchoolClass extends Model
     use HasFactory;
     protected $fillable = [
         'name',
+        'code',
+        'category',
+        'status'
     ];
+
+    protected $casts = [
+        'category' => 'string',
+    ];
+
+    // Constants for category
+    const CATEGORY_JUNIOR = 'junior';
+    const CATEGORY_SENIOR = 'senior';
+
+    // Get all categories
+    public static function getCategories()
+    {
+        return [
+            self::CATEGORY_JUNIOR => 'Junior',
+            self::CATEGORY_SENIOR => 'Senior'
+        ];
+    }
 
     // A class has many class arms
     public function classArms()
@@ -31,4 +51,18 @@ class SchoolClass extends Model
     {
         return $this->students()->where('id', $studentId)->first();
     }
+
+    public function scopeJunior($query)
+    {
+        return $query->where('category', 'junior');
+    }
+
+    public function scopeSenior($query)
+    {
+        return $query->where('category', 'senior');
+    }
+
+
+
+
 }

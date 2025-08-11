@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ClassArm extends Model
 {
     use HasFactory;
-    protected $fillable = ['school_class_id', 'name'];
+    protected $fillable = ['school_class_id', 'name', 'status'];
 
     // Class arm belongs to a class
     public function schoolClass()
@@ -27,4 +27,6 @@ class ClassArm extends Model
     {
         return $this->students()->where('id', $studentId)->first();
     }
+
+
 }
