@@ -54,7 +54,31 @@ Route::resource('subjects', App\Http\Controllers\SubjectController::class)
         'destroy' => 'subjects.destroy'
     ]);
 Route::put('/subjects/{subject}/status', [App\Http\Controllers\SubjectController::class, 'updateStatus'])
-     ->name('classarms.updateStatus');
+     ->name('subjects.updateStatus');
+
+Route::resource('staff', App\Http\Controllers\StaffController::class)
+    ->names([
+        'index' => 'staff.index',
+        'create' => 'staff.create',
+        'store' => 'staff.store',
+        'edit' => 'staff.edit',
+        'update' => 'staff.update',
+        'destroy' => 'staff.destroy'
+    ]);
+Route::put('/staff/{staff}/status', [App\Http\Controllers\StaffController::class, 'updateStatus'])
+     ->name('staff.updateStatus');
+
+Route::resource('sessions', App\Http\Controllers\SessionController::class)
+    ->names([
+        'index' => 'sessions.index',
+        'create' => 'sessions.create',
+        'store' => 'sessions.store',
+        'edit' => 'sessions.edit',
+        'update' => 'sessions.update',
+        'destroy' => 'sessions.destroy'
+    ]);
+Route::put('/sessions/{class}/status', [App\Http\Controllers\SessionController::class, 'updateStatus'])
+     ->name('sessions.updateStatus');
 
 
 Route::view('profile', 'profile')

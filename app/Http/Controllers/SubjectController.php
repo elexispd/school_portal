@@ -10,26 +10,21 @@ class SubjectController extends Controller
 {
     public function index()
     {
-        $classes = Subject::all();
+        $subjects = Subject::all();
         return view('subjects.index', compact('subjects'));
     }
 
     public function create()
     {
-        return view('subjects.create', compact('subjects'));
+        return view('subjects.create');
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255'
-            ],
-            'code' => 'required|string|exists:school_classes,id',
+            'name' => 'required|string|max:255|unique:subjects,name',
+            'code' => 'required|string|unique:subjects,code',
         ]);
-
 
         $validated['name'] = trim($validated['name']);
         $validated['code'] = trim($validated['code']);
@@ -42,10 +37,11 @@ class SubjectController extends Controller
     }
 
 
+
     public function edit($id)
     {
-        $classarm = Subject::findOrFail($id);
-        return view('subjects.edit', compact('subjects'));
+        $subject = Subject::findOrFail($id);
+        return view('subjects.edit', compact('subject'));
     }
 
     public function update(Request $request, $id)
@@ -58,7 +54,7 @@ class SubjectController extends Controller
                 'string',
                 'max:255'
             ],
-            'code' => 'required|integer|exists:subjects,id',
+            'code' => 'required|string|unique:subjects,code',
         ]);
 
         $validated['name'] = trim($validated['name']);

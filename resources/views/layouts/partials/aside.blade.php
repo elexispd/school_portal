@@ -3,7 +3,7 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="index.html">
+        <a class="nav-link " href="{{ route('dashboard') }}">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -17,12 +17,12 @@
         </a>
         <ul id="staff-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="forms-elements.html">
+            <a href="{{ route('staff.create') }}">
               <i class="bi bi-circle"></i><span>Add Staff</span>
             </a>
           </li>
           <li>
-            <a href="forms-elements.html">
+            <a href="{{ route('staff.index') }}">
               <i class="bi bi-circle"></i><span>View Staff</span>
             </a>
           </li>
@@ -57,12 +57,12 @@
         </a>
         <ul id="session-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
           <li>
-            <a href="create-session.html">
+            <a href="{{ route('sessions.create') }}">
               <i class="bi bi-circle"></i><span>Create Session</span>
             </a>
           </li>
           <li>
-            <a href="view-session.html">
+            <a href="{{ route('sessions.index') }}">
               <i class="bi bi-circle"></i><span>View Session</span>
             </a>
           </li>
@@ -72,7 +72,7 @@
       <!-- Class -->
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#class-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-gear"></i><span>Class</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-journal-bookmark-fill"></i><span>Class</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="class-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
           <li>
@@ -91,7 +91,7 @@
       <!-- Class Arm -->
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#classarm-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-gear"></i><span>Class Arm</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-diagram-3-fill"></i><span>Class Arm</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="classarm-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
           <li>
@@ -109,16 +109,16 @@
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#subject-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-file-earmark"></i><span>Subjects</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-book-fill"></i><span>Subjects</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="subject-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="subjects/create.html">
+            <a href="{{ route('subjects.create') }}">
               <i class="bi bi-circle"></i><span>Add Subject</span>
             </a>
           </li>
           <li>
-            <a href="subjects/index.html">
+            <a href="{{ route('subjects.index') }}">
               <i class="bi bi-circle"></i><span>View Subject</span>
             </a>
           </li>
