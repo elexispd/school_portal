@@ -10,16 +10,14 @@ class AdmissionNumberService
 {
     const PREFIX = 'EHS';
 
-    public function generate(): string
+    public function generate(string $year): string
     {
-        $currentYear = date('Y');
-        $sequence = $this->getNextSequenceNumber($currentYear);
-
-        return self::PREFIX . '/' . $currentYear . '/' . Str::padLeft($sequence, 3, '0');
+        $sequence = $this->getNextSequenceNumber($year);
+        return self::PREFIX . '/' . $year . '/' . Str::padLeft($sequence, 3, '0');
     }
 
     protected function getNextSequenceNumber(string $year): int
     {
-        return Student::whereYear('created_at', $year)->count() + 1;
+        return Student::where('admission_year', $year)->count() + 1;
     }
 }

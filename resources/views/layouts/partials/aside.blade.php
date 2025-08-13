@@ -35,12 +35,12 @@
         </a>
         <ul id="student-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="forms-elements.html">
+            <a href="{{ route('students.create') }}">
               <i class="bi bi-circle"></i><span>Add Student</span>
             </a>
           </li>
           <li>
-            <a href="forms-elements.html">
+            <a href="{{ route('students.search') }}">
               <i class="bi bi-circle"></i><span>View Students</span>
             </a>
           </li>

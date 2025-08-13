@@ -3,11 +3,11 @@
 @section('content')
 
 <div class="pagetitle">
-      <h1>Staff</h1>
+      <h1>Student Search List</h1>
       <nav>
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-          <li class="breadcrumb-item">Staff</li>
+          <li class="breadcrumb-item">Students</li>
           <li class="breadcrumb-item active">List</li>
         </ol>
       </nav>
@@ -19,41 +19,33 @@
 
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title">Staff List</h5>
+              <h5 class="card-title">Student List</h5>
 
-              <table class="table datatable">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                    @foreach($staffMembers as $staff)
+                <table class="table datatable">
+                    <thead>
                     <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $staff->name }}</td>
-                        <td>{{ ucwords($staff->role) }}</td>
-                        <td>
-                            <a href="{{ route('staff.edit', $staff->id) }}" class="btn btn-primary btn-sm">Edit</a>
-                            <form action="{{ route('staff.updateStatus', $staff->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('PUT')
-                                <button type="submit" class="btn btn-sm {{ $staff->status === 'active' ? 'btn-warning' : 'btn-success' }}">
-                                    {{ $staff->status === 'active' ? 'Deactivate' : 'Activate' }}
-                                </button>
-                            </form>
-                        </td>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Reg Number</th>
+                        <th>Class</th>
+                        <th>Class Arm</th>
+                        <th>Action</th>
                     </tr>
-                    @endforeach
-                    @if($staffMembers->isEmpty())
-                    <tr>
-                        <td colspan="5" class="text-center">No classes found.</td>
-                    </tr>
-                    @endif
-                </tbody>
+                    </thead>
+                    <tbody id="class-arms-body">
+                        @foreach ($students as $student)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $student->getFullNameAttribute() }}</td>
+                            <td>{{ $student->admission_number }}</td>
+                            <td>{{ $student->schoolClass->name }}</td>
+                            <td>{{ $student->classArm->name }}</td>
+                            <td>
+                                <a href="{{ route('students.show', $student->id) }}" class="btn btn-info btn-sm text-light">View</a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
               </table>
               <!-- End Table with stripped rows -->
 
@@ -63,5 +55,8 @@
         </div>
       </div>
     </section>
+
+
+
 
 @endsection

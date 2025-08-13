@@ -10,8 +10,8 @@ class Student extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'user_id', 'admission_number', 'first_name', 'middle_name', 'last_name',
-        'class_id', 'date_of_birth', 'gender', 'religion', 'address',
+        'admission_number', 'admission_year', 'first_name', 'middle_name', 'last_name',
+        'school_class_id', 'class_arm', 'date_of_birth', 'gender', 'religion', 'address',
         'state_of_origin', 'lga', 'phone', 'passport_photo', 'result_pin'
     ];
 
@@ -21,6 +21,10 @@ class Student extends Model
     }
 
     public function class()
+    {
+        return $this->belongsTo(SchoolClass::class);
+    }
+    public function schoolClass()
     {
         return $this->belongsTo(SchoolClass::class);
     }

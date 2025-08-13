@@ -65,6 +65,7 @@ Route::resource('staff', App\Http\Controllers\StaffController::class)
         'update' => 'staff.update',
         'destroy' => 'staff.destroy'
     ]);
+
 Route::put('/staff/{staff}/status', [App\Http\Controllers\StaffController::class, 'updateStatus'])
      ->name('staff.updateStatus');
 
@@ -79,6 +80,23 @@ Route::resource('sessions', App\Http\Controllers\SessionController::class)
     ]);
 Route::put('/sessions/{class}/status', [App\Http\Controllers\SessionController::class, 'updateStatus'])
      ->name('sessions.updateStatus');
+
+
+Route::get('/students/result', [App\Http\Controllers\StudentController::class, 'studentResult'])
+     ->name('students.result');
+
+Route::resource('students', App\Http\Controllers\StudentController::class)
+    ->names([
+        'index' => 'students.search',
+        'create' => 'students.create',
+        'store' => 'students.store',
+        'edit' => 'students.edit',
+        'update' => 'students.update',
+        'destroy' => 'students.destroy'
+    ]);
+
+Route::put('/student/{student}/status', [App\Http\Controllers\StudentController::class, 'updateStatus'])
+     ->name('students.updateStatus');
 
 
 Route::view('profile', 'profile')
