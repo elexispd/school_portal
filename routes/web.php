@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\ResultController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -97,6 +99,24 @@ Route::resource('students', App\Http\Controllers\StudentController::class)
 
 Route::put('/student/{student}/status', [App\Http\Controllers\StudentController::class, 'updateStatus'])
      ->name('students.updateStatus');
+
+
+Route::get('/results/upload', [ResultController::class, 'showUploadForm'])->name('results.upload');
+Route::post('/results/fetch-students', [ResultController::class, 'fetchStudents'])->name('results.fetch');
+Route::post('/results/store', [ResultController::class, 'store'])->name('results.store');
+
+// View results for a subject
+Route::get('/results/view', [ResultController::class, 'show'])->name('results.show');
+Route::post('/results/fetch-subject-results', [ResultController::class, 'fetchSubjects'])->name('results.fetch.subject');
+Route::get('/results/{result}/edit', [ResultController::class, 'edit'])->name('results.edit');
+Route::put('/results/{result}', [ResultController::class, 'update'])->name('results.update');
+Route::delete('/results/{result}', [ResultController::class, 'destroy'])->name('results.destroy');
+
+Route::get('/results/mastersheet', [ResultController::class, 'mastersheet'])->name('results.mastersheet.show');
+Route::post('/results/getMastersheet', [ResultController::class, 'getMastersheet'])->name('results.fetch.mastersheet');
+
+
+
 
 
 Route::view('profile', 'profile')

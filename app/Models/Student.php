@@ -34,6 +34,14 @@ class Student extends Model
         return $this->belongsTo(ClassArm::class, 'class_arm');
     }
 
+    // In the Student model (Student.php)
+
+    public function results()
+    {
+        return $this->hasMany(Result::class);
+    }
+
+
     // public function guardians()
     // {
     //     return $this->belongsToMany(Guardian::class)

@@ -135,17 +135,17 @@
         </a>
         <ul id="results-nav" class="nav-content collapse" data-bs-parent="#sidebar-nav">
           <li>
-            <a href="upload-result.html">
+            <a href="{{ route('results.upload') }}">
               <i class="bi bi-circle"></i><span>Upload Result</span>
             </a>
           </li>
           <li>
-            <a href="view-result.html">
+            <a href="{{ route('results.show') }}">
               <i class="bi bi-circle"></i><span>View Result</span>
             </a>
           </li>
           <li>
-            <a href="result-mastersheet.html">
+            <a href="{{ route('results.mastersheet.show') }}">
               <i class="bi bi-circle"></i><span>Result Mastersheet</span>
             </a>
           </li>
