@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\ResultController;
+use App\Http\Controllers\ResumptionController;
+use App\Http\Controllers\VacationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,111 +19,120 @@ use App\Http\Controllers\ResultController;
 
 Route::view('/', 'welcome');
 
-Route::view('dashboard', 'dashboard')
-    ->name('dashboard');
+Route::middleware('auth')->group(function () {
+    Route::view('dashboard', 'dashboard')
+        ->name('dashboard');
 
-Route::resource('classes', App\Http\Controllers\SchoolClassController::class)
-    ->names([
-        'index' => 'classes.index',
-        'create' => 'classes.create',
-        'store' => 'classes.store',
-        'edit' => 'classes.edit',
-        'update' => 'classes.update',
-        'destroy' => 'classes.destroy'
-    ]);
-Route::put('/classes/{class}/status', [App\Http\Controllers\SchoolClassController::class, 'updateStatus'])
-     ->name('classes.updateStatus');
+    Route::resource('classes', App\Http\Controllers\SchoolClassController::class)
+        ->names([
+            'index' => 'classes.index',
+            'create' => 'classes.create',
+            'store' => 'classes.store',
+            'edit' => 'classes.edit',
+            'update' => 'classes.update',
+            'destroy' => 'classes.destroy'
+        ]);
+    Route::put('/classes/{class}/status', [App\Http\Controllers\SchoolClassController::class, 'updateStatus'])
+        ->name('classes.updateStatus');
 
-Route::resource('class_arm', App\Http\Controllers\ClassArmController::class)
-    ->names([
-        'index' => 'classarms.index',
-        'create' => 'classarms.create',
-        'store' => 'classarms.store',
-        'edit' => 'classarms.edit',
-        'update' => 'classarms.update',
-        'destroy' => 'classarms.destroy'
-    ]);
-Route::put('/classarms/{class_arm}/status', [App\Http\Controllers\ClassArmController::class, 'updateStatus'])
-     ->name('classarms.updateStatus');
-Route::get('/classarms/by-class/{classId}', [App\Http\Controllers\ClassArmController::class, 'getByClass'])
-    ->name('classarms.byClass');
+    Route::resource('class_arm', App\Http\Controllers\ClassArmController::class)
+        ->names([
+            'index' => 'classarms.index',
+            'create' => 'classarms.create',
+            'store' => 'classarms.store',
+            'edit' => 'classarms.edit',
+            'update' => 'classarms.update',
+            'destroy' => 'classarms.destroy'
+        ]);
+    Route::put('/classarms/{class_arm}/status', [App\Http\Controllers\ClassArmController::class, 'updateStatus'])
+        ->name('classarms.updateStatus');
+    Route::get('/classarms/by-class/{classId}', [App\Http\Controllers\ClassArmController::class, 'getByClass'])
+        ->name('classarms.byClass');
 
-Route::resource('subjects', App\Http\Controllers\SubjectController::class)
-    ->names([
-        'index' => 'subjects.index',
-        'create' => 'subjects.create',
-        'store' => 'subjects.store',
-        'edit' => 'subjects.edit',
-        'update' => 'subjects.update',
-        'destroy' => 'subjects.destroy'
-    ]);
-Route::put('/subjects/{subject}/status', [App\Http\Controllers\SubjectController::class, 'updateStatus'])
-     ->name('subjects.updateStatus');
+    Route::resource('subjects', App\Http\Controllers\SubjectController::class)
+        ->names([
+            'index' => 'subjects.index',
+            'create' => 'subjects.create',
+            'store' => 'subjects.store',
+            'edit' => 'subjects.edit',
+            'update' => 'subjects.update',
+            'destroy' => 'subjects.destroy'
+        ]);
+    Route::put('/subjects/{subject}/status', [App\Http\Controllers\SubjectController::class, 'updateStatus'])
+        ->name('subjects.updateStatus');
 
-Route::resource('staff', App\Http\Controllers\StaffController::class)
-    ->names([
-        'index' => 'staff.index',
-        'create' => 'staff.create',
-        'store' => 'staff.store',
-        'edit' => 'staff.edit',
-        'update' => 'staff.update',
-        'destroy' => 'staff.destroy'
-    ]);
+    Route::resource('staff', App\Http\Controllers\StaffController::class)
+        ->names([
+            'index' => 'staff.index',
+            'create' => 'staff.create',
+            'store' => 'staff.store',
+            'edit' => 'staff.edit',
+            'update' => 'staff.update',
+            'destroy' => 'staff.destroy'
+        ]);
 
-Route::put('/staff/{staff}/status', [App\Http\Controllers\StaffController::class, 'updateStatus'])
-     ->name('staff.updateStatus');
+    Route::put('/staff/{staff}/status', [App\Http\Controllers\StaffController::class, 'updateStatus'])
+        ->name('staff.updateStatus');
 
-Route::resource('sessions', App\Http\Controllers\SessionController::class)
-    ->names([
-        'index' => 'sessions.index',
-        'create' => 'sessions.create',
-        'store' => 'sessions.store',
-        'edit' => 'sessions.edit',
-        'update' => 'sessions.update',
-        'destroy' => 'sessions.destroy'
-    ]);
-Route::put('/sessions/{class}/status', [App\Http\Controllers\SessionController::class, 'updateStatus'])
-     ->name('sessions.updateStatus');
-
-
-Route::get('/students/result', [App\Http\Controllers\StudentController::class, 'studentResult'])
-     ->name('students.result');
-
-Route::resource('students', App\Http\Controllers\StudentController::class)
-    ->names([
-        'index' => 'students.search',
-        'create' => 'students.create',
-        'store' => 'students.store',
-        'edit' => 'students.edit',
-        'update' => 'students.update',
-        'destroy' => 'students.destroy'
-    ]);
-
-Route::put('/student/{student}/status', [App\Http\Controllers\StudentController::class, 'updateStatus'])
-     ->name('students.updateStatus');
+    Route::resource('sessions', App\Http\Controllers\SessionController::class)
+        ->names([
+            'index' => 'sessions.index',
+            'create' => 'sessions.create',
+            'store' => 'sessions.store',
+            'edit' => 'sessions.edit',
+            'update' => 'sessions.update',
+            'destroy' => 'sessions.destroy'
+        ]);
+    Route::put('/sessions/{class}/status', [App\Http\Controllers\SessionController::class, 'updateStatus'])
+        ->name('sessions.updateStatus');
 
 
-Route::get('/results/upload', [ResultController::class, 'showUploadForm'])->name('results.upload');
-Route::post('/results/fetch-students', [ResultController::class, 'fetchStudents'])->name('results.fetch');
-Route::post('/results/store', [ResultController::class, 'store'])->name('results.store');
+    Route::get('/students/result', [App\Http\Controllers\StudentController::class, 'studentResult'])
+        ->name('students.result');
 
-// View results for a subject
-Route::get('/results/view', [ResultController::class, 'show'])->name('results.show');
-Route::post('/results/fetch-subject-results', [ResultController::class, 'fetchSubjects'])->name('results.fetch.subject');
-Route::get('/results/{result}/edit', [ResultController::class, 'edit'])->name('results.edit');
-Route::put('/results/{result}', [ResultController::class, 'update'])->name('results.update');
-Route::delete('/results/{result}', [ResultController::class, 'destroy'])->name('results.destroy');
+    Route::resource('students', App\Http\Controllers\StudentController::class)
+        ->names([
+            'index' => 'students.search',
+            'create' => 'students.create',
+            'store' => 'students.store',
+            'edit' => 'students.edit',
+            'update' => 'students.update',
+            'destroy' => 'students.destroy'
+        ]);
 
-Route::get('/results/mastersheet', [ResultController::class, 'mastersheet'])->name('results.mastersheet.show');
-Route::post('/results/getMastersheet', [ResultController::class, 'getMastersheet'])->name('results.fetch.mastersheet');
-Route::post('/results/print', [ResultController::class, 'print'])->name('results.print');
-
-
-
+    Route::put('/student/{student}/status', [App\Http\Controllers\StudentController::class, 'updateStatus'])
+        ->name('students.updateStatus');
 
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
+    Route::get('/results/upload', [ResultController::class, 'showUploadForm'])->name('results.upload');
+    Route::post('/results/fetch-students', [ResultController::class, 'fetchStudents'])->name('results.fetch');
+    Route::post('/results/store', [ResultController::class, 'store'])->name('results.store');
 
+    // View results for a subject
+    Route::get('/results/view', [ResultController::class, 'show'])->name('results.show');
+    Route::post('/results/fetch-subject-results', [ResultController::class, 'fetchSubjects'])->name('results.fetch.subject');
+    Route::get('/results/{result}/edit', [ResultController::class, 'edit'])->name('results.edit');
+    Route::put('/results/{result}', [ResultController::class, 'update'])->name('results.update');
+    Route::delete('/results/{result}', [ResultController::class, 'destroy'])->name('results.destroy');
+
+    Route::get('/results/mastersheet', [ResultController::class, 'mastersheet'])->name('results.mastersheet.show');
+    Route::post('/results/getMastersheet', [ResultController::class, 'getMastersheet'])->name('results.fetch.mastersheet');
+    Route::post('/results/print', [ResultController::class, 'print'])->name('results.print');
+
+
+    Route::get('/resumptions', [ResumptionController::class, 'create'])->name('resumptions.create');
+    Route::post('/resumptions', [ResumptionController::class, 'store'])->name('resumptions.store');
+
+    Route::get('/vacations', [VacationController::class, 'create'])->name('vacations.create');
+    Route::post('/vacations', [VacationController::class, 'store'])->name('vacations.store');
+
+
+
+
+
+    Route::view('profile', 'profile')
+        ->middleware(['auth'])
+        ->name('profile');
+
+});
 require __DIR__.'/auth.php';

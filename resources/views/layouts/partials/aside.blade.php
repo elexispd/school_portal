@@ -9,6 +9,20 @@
         </a>
       </li><!-- End Dashboard Nav -->
 
+      <li class="nav-heading">Result Component</li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed"  href="{{ route('resumptions.create') }}">
+          <i class="bi bi-person-lines-fill"></i><span>Resumption</span><i class="ms-auto"></i>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed"  href="{{ route('vacations.create') }}">
+          <i class="bi bi-person-lines-fill"></i><span>Closing Date</span><i class="ms-auto"></i>
+        </a>
+      </li>
+
       <li class="nav-heading">Users</li>
 
       <li class="nav-item">

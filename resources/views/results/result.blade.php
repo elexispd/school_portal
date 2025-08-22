@@ -120,6 +120,54 @@
             width: 160px;
         }
 
+        .grade table {
+            border-collapse: collapse;
+            border-color: rgb(147, 144, 144);
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .grade table th,
+        .grade table td {
+            padding: 5px 0;
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-between;
+
+        }
+
+        .summary table {
+            border-collapse: collapse;
+            border-color: rgb(147, 144, 144);
+            width: 75%;
+        }
+
+        .summary table td {
+            padding: 5px;
+            text-align: start;
+            font-size: 12px;
+        }
+
+        .summary-title {
+            text-align: start;
+        }
+
+        .summary table td p {
+            font-size: 12px;
+            padding: 1px;
+        }
+
+        .summary .stamp img {
+            width: 110px;
+        }
+
+        .summary .stamp p {
+            font-size: 14px;
+            line-height: 5px;
+        }
+
         .footer {
             text-align: start;
             font-size: 10px;
@@ -129,7 +177,7 @@
 
 <body>
 
-    <!-- ✅ Loop outside container -->
+
     @foreach ($studentResults as $data)
     <div class="container">
         <div class="main">
@@ -152,7 +200,7 @@
             <div class="contacts">
                 <h2>{{ $data['student']->getFullNameAttribute() }}</h2>
                 <p><b>Admission Number:</b> {{ $data['student']->admission_number }} |
-                   <b>Portal Code:</b> {{ $data['student']->portal_code }} |
+                   <b>Portal Code:</b> {{ $data['student']->result_pin }} |
                    <b>Status:</b> Active</p>
             </div>
 
@@ -167,14 +215,15 @@
                 <div class="second-section">
                     <p>
                         <b>Class:</b> {{ $data['results'][0]->getClassName() }} <br>
-                        <b>Students in Class:</b> {{ $totalStudentsInClass }} <br>
-                        <b>Total students in stream:</b> {{ $totalStudentsInClassArm }}
+                        <b>No in Class:</b> {{ $totalStudentsInClass }} <br>
+                        <b>No. in Clas Arm:</b> {{ $totalStudentsInClassArm }}
                     </p>
                 </div>
                 <div class="third-section">
                     <p>
                         <b>Performance Average (PA):</b> {{ number_format($data['average'], 2) }} <br>
                         <b>Position:</b> {{ getOrdinal($data['position']) }} <br>
+                        <b>Vacation Date:</b> {{ $vacation->date->format('jS F, Y') }} <br>
                     </p>
                 </div>
             </div>
@@ -208,8 +257,54 @@
                 </table>
             </div>
 
-            <div class="footer">
-                <p><b>Resumption Date: 13th January, 2025</b></p>
+            <div class="grade">
+                <h3>Grading System</h3>
+                <table border="1">
+                    <tr>
+                        <th>A - Distinction</th>
+                        <th>B - Lower Distinction</th>
+                        <th>C - Credit</th>
+                        <th>D - Pass</th>
+                        <th>F - Fail</th>
+                    </tr>
+                    <tr>
+                        <td>80 - 100</td>
+                        <td>70 - 80</td>
+                        <td>60 - 70</td>
+                        <td>50 - 60</td>
+                        <td>0 - 50</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3 class="summary-title">Summary</h3>
+            <div class="summary">
+
+                <table border="1">
+                    <tr>
+                        <td><b>TOTAL SCORE:</b></td>
+                        <td>{{ $data['total_score'] }}</td>
+                        <td><b>AVG SCORE:</b></td>
+                        <td>{{ number_format($data['average'], 2) }}%</td>
+                        <td><b>REMARK:</b></td>
+                        <td><b>STATUS:</b></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="7">
+                            <p> <b>Form Teacher's Comment:</b> My Dear, Outstanding achievement! Your hard work and
+                                skills have truly shone through, Keep aiming high and breaking new ground!</p>
+                        </td>
+                    </tr>
+                </table>
+                <div class="stamp">
+                    <img src="{{ asset('assets/img/stamp.png') }}" alt="">
+                    <p>Name of Principal</p>
+                </div>
+
+            </div>
+            <div class="footer" sty>
+                <p><b>Resumption Date: {{ $resumption->date->format('jS F, Y') }}</b></p>
             </div>
         </div>
     </div>

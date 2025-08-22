@@ -148,32 +148,7 @@ class ResultController extends Controller
         return view('results.edit', compact('result'));
     }
 
-    // Update result
-    public function update2(Request $request, Result $result)
-    {
-        // Validate input data
-        $request->validate([
-            'ca' => 'nullable|numeric',
-            'exam' => 'nullable|numeric',
-        ]);
 
-        // Update the result
-        $result->update([
-            'ca' => $request->ca,
-            'exam' => $request->exam,
-            'total' => ($request->ca + $request->exam),
-            'subject_id' => $request->subject_id,
-            'session_id' => $request->session_id,
-            'term' => $request->term,
-            'school_class_id' => $request->school_class_id,
-            'class_arm_id' => $request->class_arm_id,
-        ]);
-
-        $this->updateClassStatistics($request);
-
-        return redirect()->route('results.edit',  $result->subject_id)
-            ->with('success', 'Result updated successfully!');
-    }
 
     public function update(Request $request, Result $result)
     {
@@ -399,12 +374,21 @@ class ResultController extends Controller
             $studentResults[$position]['position'] = $position + 1;
         }
 
+        $resumption = \App\Models\Resumption::where('session_id', $request->session_id)
+                        ->where('term', $request->term)
+                        ->first();
+        $vacation = \App\Models\Vacation::where('session_id', $request->session_id)
+                        ->where('term', $request->term)
+                        ->first();
+
         // Pass the necessary data to the view
         return view('results.result', [
             'studentResults' => $studentResults,
             'request' => $request,  // Pass the $request object to the view
             'totalStudentsInClassArm' => $totalStudentsInClassArm,
             'totalStudentsInClass' => $totalStudentsInClass,
+            'resumption' => $resumption,
+            'vacation' => $vacation
         ]);
     }
 
