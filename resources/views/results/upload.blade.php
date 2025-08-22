@@ -29,7 +29,7 @@
                 <!-- First Name -->
                 <div class="col-6">
                     <label for="session" class="form-label">Session</label>
-                    <select name="session" class="form-control" required>
+                    <select name="session_id" class="form-control" required>
                         <option value="" selected disable>Select Session</option>
                         @foreach($sessions as $session)
                             <option value="{{ $session->id }}">{{ $session->name }}</option>

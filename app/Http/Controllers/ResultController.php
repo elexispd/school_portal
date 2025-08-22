@@ -58,6 +58,7 @@ class ResultController extends Controller
         $existingResults = Result::whereIn('student_id', array_keys($studentsScores))  // Fetch results only for the students being processed
             ->where('subject_id', $request->subject_id)
             ->where('term', $request->term)
+            ->where('session_id', $request->session_id)
             ->where('school_class_id', $request->school_class_id)
             ->where('class_arm_id', $request->class_arm_id)
             ->pluck('student_id');
@@ -82,6 +83,7 @@ class ResultController extends Controller
                 'term' => $request->term,
                 'school_class_id' => $request->school_class_id,
                 'class_arm_id' => $request->class_arm_id,
+                'session_id' => $request->session_id,
                 'ca' => $scores['ca'] ?? null,
                 'ca2' => $scores['ca2'] ?? null,
                 'ca3' => $scores['ca3'] ?? null,
@@ -117,15 +119,17 @@ class ResultController extends Controller
     {
 
         // Validate incoming request data
-        $request->validate([
+        $validated = $request->validate([
             'school_class_id' => 'required|exists:school_classes,id',
             'class_arm_id'    => 'required|exists:class_arms,id',
             'subject_id'      => 'required|exists:subjects,id',
+            'session_id'      => 'required|exists:sessions,id'
         ]);
 
         // Fetch results for the specific subject, class, and arm
         $results = Result::where('subject_id', $request->subject_id)
             ->where('school_class_id', $request->school_class_id)
+            ->where('session_id', $request->session_id)
             ->where('class_arm_id', $request->class_arm_id)
             ->get();
 
@@ -145,7 +149,7 @@ class ResultController extends Controller
     }
 
     // Update result
-    public function update(Request $request, Result $result)
+    public function update2(Request $request, Result $result)
     {
         // Validate input data
         $request->validate([
@@ -159,6 +163,7 @@ class ResultController extends Controller
             'exam' => $request->exam,
             'total' => ($request->ca + $request->exam),
             'subject_id' => $request->subject_id,
+            'session_id' => $request->session_id,
             'term' => $request->term,
             'school_class_id' => $request->school_class_id,
             'class_arm_id' => $request->class_arm_id,
@@ -169,6 +174,43 @@ class ResultController extends Controller
         return redirect()->route('results.edit',  $result->subject_id)
             ->with('success', 'Result updated successfully!');
     }
+
+    public function update(Request $request, Result $result)
+    {
+        $request->validate([
+            'ca'   => 'nullable|numeric|min:0',
+            'exam' => 'nullable|numeric|min:0',
+            'subject_id'      => 'required|exists:subjects,id',
+            'session_id'      => 'required|exists:sessions,id',
+            'term'            => 'required|integer',
+            'school_class_id' => 'required|exists:school_classes,id',
+            'class_arm_id'    => 'required|exists:class_arms,id',
+        ]);
+
+        $total = (int)($request->ca ?? 0) + (int)($request->exam ?? 0);
+
+        $result->update([
+            'ca'   => $request->ca,
+            'exam' => $request->exam,
+            'total'=> $total,
+            'grade'=> $this->calculateGrade($total),
+
+            // these are usually fixed after creation,
+            // but if you allow editing, keep them
+            'subject_id'      => $request->subject_id,
+            'session_id'      => $request->session_id,
+            'term'            => $request->term,
+            'school_class_id' => $request->school_class_id,
+            'class_arm_id'    => $request->class_arm_id,
+        ]);
+
+        $this->updateClassStatistics($request);
+
+        return redirect()
+            ->route('results.edit', $result->subject_id)
+            ->with('success', 'Result updated successfully!');
+    }
+
 
     // Delete result
 
@@ -181,6 +223,7 @@ class ResultController extends Controller
         $schoolClassId = $result->school_class_id;
         $classArmId = $result->class_arm_id;
         $subjectId = $result->subject_id;
+        $sessionId = $result->session_id;
         $term = $result->term;
 
         // Delete the result
@@ -190,6 +233,7 @@ class ResultController extends Controller
         $this->updateClassStatistics(new Request([
             'school_class_id' => $schoolClassId,
             'class_arm_id' => $classArmId,
+            'session_id' => $sessionId,
             'subject_id' => $subjectId,
             'term' => $term
         ]));
@@ -207,77 +251,167 @@ class ResultController extends Controller
     }
 
     public function getMasterSheet(Request $request)
-{
-    // Validate the incoming request
-    $request->validate([
-        'session_id' => 'required|exists:sessions,id',
-        'school_class_id' => 'required|exists:school_classes,id',
-        'class_arm_id'    => 'required|exists:class_arms,id',
-        'term'             => 'required|integer',
-    ]);
+    {
+        // Validate the incoming request
+        $request->validate([
+            'session_id' => 'required|exists:sessions,id',
+            'school_class_id' => 'required|exists:school_classes,id',
+            'class_arm_id'    => 'required|exists:class_arms,id',
+            'term'             => 'required|integer',
+        ]);
 
-    // Get all subjects for the given class and arm
-    $subjects = Subject::all();
+        // Get all subjects for the given class and arm
+        $subjects = Subject::all();
 
-    // Initialize an array to hold results for each subject
-    $subjectResults = [];
+        // Initialize an array to hold results for each subject
+        $subjectResults = [];
 
-    // Loop through each subject to fetch results and calculate aggregates
-    foreach ($subjects as $subject) {
-        // Get results for the subject in the given class, arm, and term
-        $results = Result::where('school_class_id', $request->school_class_id)
-                        ->where('class_arm_id', $request->class_arm_id)
-                        ->where('subject_id', $subject->id)
-                        ->where('term', $request->term)
-                        ->with('student')  // Eager load the student information
-                        ->get();
+        // Loop through each subject to fetch results and calculate aggregates
+        foreach ($subjects as $subject) {
+            // Get results for the subject in the given class, arm, and term
+            $results = Result::where('school_class_id', $request->school_class_id)
+                            ->where('class_arm_id', $request->class_arm_id)
+                            ->where('subject_id', $subject->id)
+                            ->where('session_id', $request->session_id)
+                            ->where('term', $request->term)
+                            ->with('student')  // Eager load the student information
+                            ->get();
 
-        // Calculate aggregates for the subject
-        if ($results->count() > 0) {
-            $totalScores = $results->pluck('total');
+            // Calculate aggregates for the subject
+            if ($results->count() > 0) {
+                $totalScores = $results->pluck('total');
 
-            // Calculate the highest, lowest, and average score
-            $highestScore = $totalScores->max();
-            $lowestScore = $totalScores->min();
-            $avgScore = $totalScores->avg();
+                // Calculate the highest, lowest, and average score
+                $highestScore = $totalScores->max();
+                $lowestScore = $totalScores->min();
+                $avgScore = $totalScores->avg();
 
-            // Add to the subject's data
-            $subjectResults[] = [
-                'subject' => $subject,
-                'results' => $results,
-                'highest_score' => $highestScore,
-                'lowest_score' => $lowestScore,
-                'avg_score' => $avgScore,
-            ];
+                // Add to the subject's data
+                $subjectResults[] = [
+                    'subject' => $subject,
+                    'results' => $results,
+                    'highest_score' => $highestScore,
+                    'lowest_score' => $lowestScore,
+                    'avg_score' => $avgScore,
+                ];
+            }
         }
+
+        // Get all students in the class with their total score
+        $students = Student::where('school_class_id', $request->school_class_id)
+                            ->where('class_arm', $request->class_arm_id)
+                            ->with(['results' => function ($query) use ($request) {
+                                $query->where('term', $request->term);
+                                    //   ->where('session_id', $request->session_id);
+                            }])
+                            ->get();
+
+        // Prepare total score and position for each student
+        foreach ($students as $student) {
+            $totalScore = $student->results->sum('total');
+            $student->total_score = $totalScore;
+        }
+
+        // Sort the students by their total score to calculate positions
+        $sortedStudents = $students->sortByDesc('total_score');
+        foreach ($sortedStudents as $index => $student) {
+            $student->position = $index + 1;
+        }
+
+
+        if(!empty($subjectResults) ) {
+            return view('layouts.partials.mastersheet', [
+                'subjectResults' => $subjectResults,
+                'students' => $sortedStudents,
+                'session_id' => $request->session_id,
+                'school_class_id' => $request->school_class_id,
+                'class_arm_id' => $request->class_arm_id,
+                'term' => $request->term
+            ]);
+        } else {
+            return "<h3 class='text-info'>No Result Found</h3>";
+        }
+
     }
 
-    // Get all students in the class with their total score
-    $students = Student::where('school_class_id', $request->school_class_id)
-                        ->where('class_arm', $request->class_arm_id)
-                        ->with(['results' => function ($query) use ($request) {
-                            $query->where('term', $request->term);
-                                //   ->where('session_id', $request->session_id);
-                        }])
-                        ->get();
+    public function print(Request $request)
+    {
+        $request->validate([
+            'school_class_id' => 'required|exists:school_classes,id',
+            'class_arm_id' => 'required|exists:class_arms,id',
+            'session_id' => 'required|exists:sessions,id',
+            'term' => 'required|integer',
+        ]);
 
-    // Prepare total score and position for each student
-    foreach ($students as $student) {
-        $totalScore = $student->results->sum('total');
-        $student->total_score = $totalScore;
+        // Get all results for the given class, arm, term, and session
+        $results = Result::where('school_class_id', $request->school_class_id)
+            ->where('class_arm_id', $request->class_arm_id)
+            ->where('term', $request->term)
+            ->where('session_id', $request->session_id)
+            ->with(['student', 'session', 'schoolClass', 'classArm', 'subject'])
+            ->get();
+
+        // Calculate the total number of students in the class arm (distinct student_ids)
+        $totalStudentsInClassArm = Result::where('school_class_id', $request->school_class_id)
+            ->where('class_arm_id', $request->class_arm_id)
+            ->where('term', $request->term)
+            ->where('session_id', $request->session_id)
+            ->distinct('student_id')
+            ->count('student_id');
+
+        // Calculate the total number of students in the entire class (without class arm filter)
+        $totalStudentsInClass = Result::where('school_class_id', $request->school_class_id)
+            ->where('term', $request->term)
+            ->where('session_id', $request->session_id)
+            ->distinct('student_id')
+            ->count('student_id');
+
+        // Organize results by student and calculate averages, positions, etc.
+        $studentResults = [];
+
+        foreach ($results as $result) {
+            $studentId = $result->student_id;
+            if (!isset($studentResults[$studentId])) {
+                $studentResults[$studentId] = [
+                    'student' => $result->student,
+                    'total_score' => 0,
+                    'subject_count' => 0,
+                    'results' => [],
+                ];
+            }
+
+            $studentResults[$studentId]['results'][] = $result;
+            $studentResults[$studentId]['total_score'] += $result->total;
+            $studentResults[$studentId]['subject_count']++;
+        }
+
+        // Calculate averages and positions
+        foreach ($studentResults as $studentId => $data) {
+            $average = $data['total_score'] / $data['subject_count'];
+            $studentResults[$studentId]['average'] = $average;
+        }
+
+        usort($studentResults, function ($a, $b) {
+            return $b['total_score'] - $a['total_score'];
+        });
+
+        foreach ($studentResults as $position => $data) {
+            $studentResults[$position]['position'] = $position + 1;
+        }
+
+        // Pass the necessary data to the view
+        return view('results.result', [
+            'studentResults' => $studentResults,
+            'request' => $request,  // Pass the $request object to the view
+            'totalStudentsInClassArm' => $totalStudentsInClassArm,
+            'totalStudentsInClass' => $totalStudentsInClass,
+        ]);
     }
 
-    // Sort the students by their total score to calculate positions
-    $sortedStudents = $students->sortByDesc('total_score');
-    foreach ($sortedStudents as $index => $student) {
-        $student->position = $index + 1;
-    }
 
-    return view('layouts.partials.mastersheet', [
-        'subjectResults' => $subjectResults,
-        'students' => $sortedStudents,
-    ]);
-}
+
+
+
 
 
 
@@ -322,11 +456,12 @@ class ResultController extends Controller
     /**
      * Update class statistics after all results have been processed
      */
-    private function updateClassStatistics(Request $request)
+    private function updateClassStatistics2(Request $request)
     {
-        // Get all results for the given class, arm, subject, and term
+        // Get all results for the given class, arm, subject, session and term
         $results = Result::where('school_class_id', $request->school_class_id)
                         ->where('class_arm_id', $request->class_arm_id)
+                        ->where('session_id', $request->session_id)
                         ->where('subject_id', $request->subject_id)
                         ->where('term', $request->term)
                         ->get();
@@ -348,6 +483,59 @@ class ResultController extends Controller
             ]);
         }
     }
+
+    private function updateClassStatistics(Request $request)
+    {
+        // Get all distinct subjects in this class/arm/session/term
+        $subjects = Result::where('school_class_id', $request->school_class_id)
+            ->where('class_arm_id', $request->class_arm_id)
+            ->where('session_id', $request->session_id)
+            ->where('term', $request->term)
+            ->pluck('subject_id')
+            ->unique();
+
+        foreach ($subjects as $subjectId) {
+            $results = Result::where('school_class_id', $request->school_class_id)
+                ->where('class_arm_id', $request->class_arm_id)
+                ->where('session_id', $request->session_id)
+                ->where('term', $request->term)
+                ->where('subject_id', $subjectId)
+                ->orderByDesc('total')
+                ->get();
+
+            if ($results->isEmpty()) {
+                continue;
+            }
+
+            $totals = $results->pluck('total')->map(fn($v) => (int)($v ?? 0));
+            $lowest = $totals->min();
+            $highest = $totals->max();
+            $avg = round($totals->avg(), 2);
+
+            // Rank within this subject only
+            $prevScore = null;
+            $rank = 0;
+
+            foreach ($results as $i => $result) {
+                $score = (int)($result->total ?? 0);
+
+                // Only change rank when score drops
+                if ($prevScore === null || $score < $prevScore) {
+                    $rank = $i + 1;
+                    $prevScore = $score;
+                }
+
+                $result->update([
+                    'class_lowest_score'  => $lowest,
+                    'class_highest_score' => $highest,
+                    'subject_avg_score'   => $avg,
+                    'position'            => $rank,
+                ]);
+            }
+        }
+    }
+
+
 
 
 }

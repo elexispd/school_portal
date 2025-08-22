@@ -46,7 +46,16 @@
 
                 <!-- Action (Edit/Delete) -->
                 <td>
-                    <a href="{{ route('results.edit', ['result' => $student->id]) }}" class="btn btn-primary btn-sm">Print</a>
+                    <form action="{{ route('results.print') }}" method="post" target="_blank">
+                        @csrf
+                        <input type="hidden" name="school_class_id" value="{{ $school_class_id }}">
+                        <input type="hidden" name="session_id" value="{{ $session_id }}">
+                        <input type="hidden" name="class_arm_id" value="{{ $class_arm_id }}">
+                        <input type="hidden" name="term" value="{{ $term }}">
+                        <input type="hidden" name="student_id" value="{{ $student->id }}">
+                        <button type="submit" class="btn btn-primary btn-sm">Print</button>
+                    </form>
+
                 </td>
             </tr>
         @endforeach

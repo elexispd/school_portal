@@ -45,6 +45,7 @@
                         <input type="hidden" id="" name="class_arm_id" class="form-control" value="{{ $result->school_class_id }}" required>
                         <input type="hidden" id="" name="subject_id" class="form-control" value="{{ $result->school_class_id }}" required>
                         <input type="hidden" id="" name="term" class="form-control" value="{{ $result->term }}" required>
+                        <input type="hidden" id="" name="session_id" class="form-control" value="{{ $result->session_id }}" required>
                     </form>
 
                 </div>

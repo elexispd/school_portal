@@ -27,7 +27,7 @@
                 <!-- First Name -->
                 <div class="col-6">
                     <label for="session" class="form-label">Session</label>
-                    <select name="session" class="form-control" required>
+                    <select name="session_id" id="session_id" class="form-control" required>
                         <option value="" selected disable>Select Session</option>
                         @foreach($sessions as $session)
                             <option value="{{ $session->id }}">{{ $session->name }}</option>
@@ -112,10 +112,11 @@
             const classId = $('#class').val();
             const classArmId = $('#classarm').val();
             const term = $('#term').val();
+            const sessionId = $('#session_id').val();
             const subjectId = $('select[name="subject_id"]').val();
 
-            if (!classId || !classArmId || !subjectId) {
-                alert("Please select class, class arm, and subject before generating.");
+            if (!classId || !classArmId || !subjectId || !sessionId) {
+                alert("Please select class, class arm, session and subject before generating.");
                 return;
             }
 
@@ -128,9 +129,11 @@
                     school_class_id: classId,  // Changed class_id to school_class_id
                     class_arm_id: classArmId,  // Kept class_arm_id as it is correct
                     subject_id: subjectId,
+                    session_id: sessionId,
                     term: term,
                 },
                 success: function(response) {
+                    console.log(response);
                     // Insert the HTML table into the page
                     $('#subjectResults').html(response); // Inject the returned HTML table
                     $('#subjectResults').show(); // Display the results section

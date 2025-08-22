@@ -114,6 +114,7 @@ Route::delete('/results/{result}', [ResultController::class, 'destroy'])->name('
 
 Route::get('/results/mastersheet', [ResultController::class, 'mastersheet'])->name('results.mastersheet.show');
 Route::post('/results/getMastersheet', [ResultController::class, 'getMastersheet'])->name('results.fetch.mastersheet');
+Route::post('/results/print', [ResultController::class, 'print'])->name('results.print');
 
 
 
