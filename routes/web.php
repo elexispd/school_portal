@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ResumptionController;
 use App\Http\Controllers\VacationController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,8 +21,8 @@ use App\Http\Controllers\VacationController;
 Route::view('/', 'welcome');
 
 Route::middleware('auth')->group(function () {
-    Route::view('dashboard', 'dashboard')
-        ->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
 
     Route::resource('classes', App\Http\Controllers\SchoolClassController::class)
         ->names([
@@ -46,8 +47,6 @@ Route::middleware('auth')->group(function () {
         ]);
     Route::put('/classarms/{class_arm}/status', [App\Http\Controllers\ClassArmController::class, 'updateStatus'])
         ->name('classarms.updateStatus');
-    Route::get('/classarms/by-class/{classId}', [App\Http\Controllers\ClassArmController::class, 'getByClass'])
-        ->name('classarms.byClass');
 
     Route::resource('subjects', App\Http\Controllers\SubjectController::class)
         ->names([
@@ -135,4 +134,12 @@ Route::middleware('auth')->group(function () {
         ->name('profile');
 
 });
+
+Route::get('/classarms/by-class/{classId}', [App\Http\Controllers\ClassArmController::class, 'getByClass'])
+    ->name('classarms.byClass');
+
+Route::get('/check-result', [ResultController::class, 'index'])->name('results.index');
+Route::post('/check-result', [ResultController::class, 'checkResult'])->name('results.check');
+
+
 require __DIR__.'/auth.php';

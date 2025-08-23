@@ -7,8 +7,9 @@
                 @foreach($subjectResults as $subjectResult)
                     <th>{{ $subjectResult['subject']->name }}</th>
                 @endforeach
+                <th>Total</th>
                 <th>Average</th>
-                <th>Position</th>
+                {{-- <th>Position</th> --}}
             </tr>
         </thead>
         <tbody>
@@ -27,7 +28,9 @@
                             {{ $result ? $result->total : 'N/A' }}
                         </td>
                     @endforeach
-
+                    <td>
+                        {{ $student->results->sum('total') }}
+                    </td>
                     <!-- Average Score -->
                     <td>
                         @php
@@ -38,10 +41,11 @@
                         {{ number_format($averageScore, 2) }}
                     </td>
 
+
                     <!-- Position -->
-                    <td>
+                    {{-- <td>
                         {{ $student->position }}
-                    </td>
+                    </td> --}}
                 </tr>
             @endforeach
         </tbody>

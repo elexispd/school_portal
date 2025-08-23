@@ -273,11 +273,13 @@ class ResultController extends Controller
         }
 
         // Get all students in the class with their total score
+
+
         $students = Student::where('school_class_id', $request->school_class_id)
                             ->where('class_arm', $request->class_arm_id)
                             ->with(['results' => function ($query) use ($request) {
-                                $query->where('term', $request->term);
-                                    //   ->where('session_id', $request->session_id);
+                                $query->where('term', $request->term)
+                                    ->where('session_id', $request->session_id);
                             }])
                             ->get();
 
@@ -327,19 +329,15 @@ class ResultController extends Controller
             ->get();
 
         // Calculate the total number of students in the class arm (distinct student_ids)
-        $totalStudentsInClassArm = Result::where('school_class_id', $request->school_class_id)
-            ->where('class_arm_id', $request->class_arm_id)
-            ->where('term', $request->term)
-            ->where('session_id', $request->session_id)
-            ->distinct('student_id')
-            ->count('student_id');
+        $counts = Student::selectRaw("
+        COUNT(*) as total_students_in_class,
+        SUM(CASE WHEN class_arm = ? THEN 1 ELSE 0 END) as total_students_in_class_arm
+            ", [$request->class_arm_id])
+            ->where('school_class_id', $request->school_class_id)
+            ->first();
 
-        // Calculate the total number of students in the entire class (without class arm filter)
-        $totalStudentsInClass = Result::where('school_class_id', $request->school_class_id)
-            ->where('term', $request->term)
-            ->where('session_id', $request->session_id)
-            ->distinct('student_id')
-            ->count('student_id');
+        $totalStudentsInClass = $counts->total_students_in_class;
+        $totalStudentsInClassArm = $counts->total_students_in_class_arm;
 
         // Organize results by student and calculate averages, positions, etc.
         $studentResults = [];
@@ -518,6 +516,95 @@ class ResultController extends Controller
             }
         }
     }
+
+
+    public function index()
+    {
+        $classes = SchoolClass::where('status', 'active')->get();
+        $sessions = Session::where('status', 'active')->get();
+        return view('results.check', compact('classes','sessions'));
+    }
+
+    public function checkResult(Request $request)
+    {
+        $request->validate([
+            'class_id'     => 'required|exists:school_classes,id',
+            'classarm_id'  => 'required|exists:class_arms,id',
+            'session_id'   => 'required|exists:sessions,id',
+            'term'         => 'required|integer|in:1,2,3',
+            'pin'          => 'required|string',
+        ]);
+
+
+
+        // validate pin
+        $student = Student::where('result_pin', $request->pin)->first();
+
+        if (!$student) {
+            return back()->withErrors(['pin' => 'Invalid Scratch Card Pin']);
+        }
+
+        // fetch results for that student
+        $results = Result::where('student_id', $student->id)
+            ->where('school_class_id', $request->class_id)
+            ->where('class_arm_id', $request->classarm_id)
+            ->where('session_id', $request->session_id)
+            ->where('term', $request->term)
+            ->with(['student', 'session', 'schoolClass', 'classArm', 'subject'])
+            ->get();
+
+        if ($results->isEmpty()) {
+            return back()->withErrors(['pin' => 'No results found for the provided details']);
+        }
+
+        // Calculate totals for this single student
+        $totalScore   = $results->sum('total');
+        $subjectCount = $results->count();
+        $average      = $subjectCount > 0 ? $totalScore / $subjectCount : 0;
+
+        // calculate position within class arm
+        $allResults = Result::where('school_class_id', $request->class_id)
+            ->where('class_arm_id', $request->classarm_id)
+            ->where('session_id', $request->session_id)
+            ->where('term', $request->term)
+            ->selectRaw('student_id, SUM(total) as total_score')
+            ->groupBy('student_id')
+            ->orderByDesc('total_score')
+            ->get();
+
+        $position = $allResults->search(function ($row) use ($student) {
+            return $row->student_id == $student->id;
+        }) + 1; // +1 because array is zero-based
+
+        // get resumption and vacation dates
+        $resumption = \App\Models\Resumption::where('session_id', $request->session_id)
+            ->where('term', $request->term)
+            ->first();
+
+        $vacation = \App\Models\Vacation::where('session_id', $request->session_id)
+            ->where('term', $request->term)
+            ->first();
+        $totalStudentsInClassArm = Student::where('school_class_id', $request->class_id)
+            ->where('class_arm', $request->classarm_id)
+            ->count('id');
+
+        // Calculate the total number of students in the entire class (without class arm filter)
+        $totalStudentsInClass = Student::where('school_class_id', $request->class_id)
+            ->count('id');
+
+        return view('results.single_result', [
+            'student'     => $student,
+            'results'     => $results,
+            'average'     => $average,
+            'position'    => $position,
+            'resumption'  => $resumption,
+            'vacation'    => $vacation,
+            'request'     => $request,
+            'totalStudentsInClassArm' => $totalStudentsInClassArm,
+            'totalStudentsInClass' => $totalStudentsInClass
+        ]);
+    }
+
 
 
 

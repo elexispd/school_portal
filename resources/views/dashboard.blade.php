@@ -5,7 +5,7 @@
       <h1>Dashboard</h1>
       <nav>
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
           <li class="breadcrumb-item active">Dashboard</li>
         </ol>
       </nav>
@@ -43,7 +43,7 @@
                       <i class="bi bi-person"></i>
                     </div>
                     <div class="ps-3">
-                      <h6>145</h6>
+                      <h6>{{ $totalStudents }}</h6>
                     </div>
                   </div>
                 </div>
@@ -76,7 +76,7 @@
                       <i class="bi bi-person-lines-fill"></i>
                     </div>
                     <div class="ps-3">
-                      <h6>20</h6>
+                      <h6>{{ $totalStaff }}</h6>
                     </div>
                   </div>
                 </div>
@@ -110,7 +110,7 @@
                       <i class="bi bi-file-earmark"></i>
                     </div>
                     <div class="ps-3">
-                      <h6>1244</h6>
+                      <h6>{{ $totalSubjects }}</h6>
                     </div>
                   </div>
 
@@ -231,12 +231,15 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <th scope="row"><a href="#">#1</a></th>
-                        <td>Brandon Jacob</td>
-                        <td><a href="#" class="text-primary">JSS 1</a></td>
-                        <td>A</td>
-                      </tr>
+                        @foreach ($recentStudents as $student)
+                            <tr>
+                                <th scope="row"><a href="#">{{ $loop->iteration }}</a></th>
+                                <td>{{ $student->getFullNameAttribute()  }}</td>
+                                <td>{{ $student->schoolClass->name }}</td>
+                                <td>{{ $student->classArm->name }}</td>
+                            </tr>
+                        @endforeach
+
 
                     </tbody>
                   </table>
