@@ -19,7 +19,7 @@ class ClassArm extends Model
     // A class arm has many students
     public function students()
     {
-        return $this->hasMany(Student::class, 'classarm_id');
+        return $this->hasMany(Student::class, 'classarm_id')->whereNull('graduated_at');
     }
 
     // Get a specific student from this arm

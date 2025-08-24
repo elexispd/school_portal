@@ -28,7 +28,7 @@ class ResultController extends Controller
 
         $students = Student::where('school_class_id', $request->school_class_id)
             ->where('class_arm', $request->class_arm_id)
-            ->get();
+            ->get()->whereNull('graduated_at');;
 
         // Get the results for each student
         foreach ($students as $student) {
@@ -275,13 +275,21 @@ class ResultController extends Controller
         // Get all students in the class with their total score
 
 
-        $students = Student::where('school_class_id', $request->school_class_id)
-                            ->where('class_arm', $request->class_arm_id)
-                            ->with(['results' => function ($query) use ($request) {
-                                $query->where('term', $request->term)
-                                    ->where('session_id', $request->session_id);
-                            }])
-                            ->get();
+        $students = Student::whereIn('id',
+                Result::where('school_class_id', $request->school_class_id)
+                      ->where('class_arm_id', $request->class_arm_id)
+                      ->where('session_id', $request->session_id)
+                      ->where('term', $request->term)
+                      ->pluck('student_id')
+            )
+            ->with(['results' => function ($query) use ($request) {
+                $query->where('term', $request->term)
+                      ->where('session_id', $request->session_id)
+                      ->where('school_class_id', $request->school_class_id)
+                      ->where('class_arm_id', $request->class_arm_id);
+            }])
+            ->get();
+
 
         // Prepare total score and position for each student
         foreach ($students as $student) {

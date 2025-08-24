@@ -6,6 +6,7 @@ use App\Http\Controllers\ResultController;
 use App\Http\Controllers\ResumptionController;
 use App\Http\Controllers\VacationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PromotionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -125,8 +126,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/vacations', [VacationController::class, 'create'])->name('vacations.create');
     Route::post('/vacations', [VacationController::class, 'store'])->name('vacations.store');
 
-
-
+    Route::get('/promotions', [PromotionController::class, 'index'])->name('promotions.search');
+    Route::get('/promotions/result', [PromotionController::class, 'studentResult'])
+        ->name('promotions.result');
+   Route::post('/promotions/promote', [PromotionController::class, 'promoteStudents'])->name('promotions.promote');
 
 
     Route::view('profile', 'profile')

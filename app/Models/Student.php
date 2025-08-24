@@ -12,7 +12,7 @@ class Student extends Model
     protected $fillable = [
         'admission_number', 'admission_year', 'first_name', 'middle_name', 'last_name',
         'school_class_id', 'class_arm', 'date_of_birth', 'gender', 'religion', 'address',
-        'state_of_origin', 'lga', 'phone', 'passport_photo', 'result_pin'
+        'state_of_origin', 'lga', 'phone', 'passport_photo', 'result_pin', 'graduated_at'
     ];
 
     public function user()

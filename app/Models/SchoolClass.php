@@ -43,7 +43,7 @@ class SchoolClass extends Model
     // A class has many students
     public function students()
     {
-        return $this->hasMany(Student::class, 'class_id');
+        return $this->hasMany(Student::class, 'class_id')->whereNull('graduated_at');
     }
 
     // Get a specific student from this class

@@ -9,6 +9,22 @@
         </a>
       </li><!-- End Dashboard Nav -->
 
+
+      <li class="nav-heading">Academics</li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#promotion-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-person-lines-fill"></i><span>Promotion</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="promotion-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{{ route('promotions.search') }}">
+              <i class="bi bi-circle"></i><span>Promote Students</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Staff Nav -->
+
       <li class="nav-heading">Result Component</li>
 
       <li class="nav-item">
@@ -25,23 +41,23 @@
 
       <li class="nav-heading">Users</li>
 
-      <li class="nav-item">
-        <a class="nav-link collapsed" data-bs-target="#staff-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-person-lines-fill"></i><span>Staff</span><i class="bi bi-chevron-down ms-auto"></i>
-        </a>
-        <ul id="staff-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-          <li>
-            <a href="{{ route('staff.create') }}">
-              <i class="bi bi-circle"></i><span>Add Staff</span>
+        <li class="nav-item">
+            <a class="nav-link collapsed" data-bs-target="#staff-nav" data-bs-toggle="collapse" href="#">
+            <i class="bi bi-person-lines-fill"></i><span>Staff</span><i class="bi bi-chevron-down ms-auto"></i>
             </a>
-          </li>
-          <li>
-            <a href="{{ route('staff.index') }}">
-              <i class="bi bi-circle"></i><span>View Staff</span>
-            </a>
-          </li>
-        </ul>
-      </li><!-- End Staff Nav -->
+            <ul id="staff-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+            <li>
+                <a href="{{ route('staff.create') }}">
+                <i class="bi bi-circle"></i><span>Add Staff</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('staff.index') }}">
+                <i class="bi bi-circle"></i><span>View Staff</span>
+                </a>
+            </li>
+            </ul>
+        </li><!-- End Staff Nav -->
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#student-nav" data-bs-toggle="collapse" href="#">
