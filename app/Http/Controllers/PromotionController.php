@@ -74,14 +74,14 @@ class PromotionController extends Controller
                 // normal promotion
                 Promotion::create([
                     'student_id'        => $student->id,
-                    'from_class_id'     => $student->class_id,
-                    'from_class_arm_id' => $student->class_arm,
+                    'from_class_id'     => $request->from_class_id,
+                    'from_class_arm_id' => $request->from_class_arm_id,
                     'to_class_id'       => $request->to_class_id,
                     'to_class_arm_id'   => $request->to_class_arm_id,
                 ]);
 
                 // update student’s current class/arm
-                $student->class_id = $request->to_class_id;
+                $student->school_class_id = $request->to_class_id;
                 $student->class_arm = $request->to_class_arm_id;
                 $student->save();
             }

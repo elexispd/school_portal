@@ -3,7 +3,7 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="{{ route('dashboard') }}">
+        <a class="nav-link" href="{{ route('dashboard') }}">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -14,7 +14,7 @@
 
       <li class="nav-item">
         <a class="nav-link collapsed" data-bs-target="#promotion-nav" data-bs-toggle="collapse" href="#">
-          <i class="bi bi-person-lines-fill"></i><span>Promotion</span><i class="bi bi-chevron-down ms-auto"></i>
+          <i class="bi bi-arrow-down-up"></i><span>Promotion</span><i class="bi bi-chevron-down ms-auto"></i>
         </a>
         <ul id="promotion-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
@@ -25,17 +25,30 @@
         </ul>
       </li><!-- End Staff Nav -->
 
+      <li class="nav-item">
+        <a class="nav-link collapsed" data-bs-target="#list-nav" data-bs-toggle="collapse" href="#">
+          <i class="bi bi-person-lines-fill"></i><span>Student List</span><i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul id="list-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li>
+            <a href="{{ route('students.list') }}">
+              <i class="bi bi-circle"></i><span>Student List</span>
+            </a>
+          </li>
+        </ul>
+      </li><!-- End Staff Nav -->
+
       <li class="nav-heading">Result Component</li>
 
       <li class="nav-item">
         <a class="nav-link collapsed"  href="{{ route('resumptions.create') }}">
-          <i class="bi bi-person-lines-fill"></i><span>Resumption</span><i class="ms-auto"></i>
+          <i class="bi bi-clock-fill"></i><span>Resumption</span><i class="ms-auto"></i>
         </a>
       </li>
 
       <li class="nav-item">
         <a class="nav-link collapsed"  href="{{ route('vacations.create') }}">
-          <i class="bi bi-person-lines-fill"></i><span>Closing Date</span><i class="ms-auto"></i>
+          <i class="bi bi-clock-history"></i><span>Closing Date</span><i class="ms-auto"></i>
         </a>
       </li>
 
@@ -187,7 +200,7 @@
 
 
       <li class="nav-item">
-        <a class="nav-link collapsed" href="users-profile.html">
+        <a class="nav-link collapsed" href="#">
           <i class="bi bi-person"></i>
           <span>Profile</span>
         </a>

@@ -156,6 +156,29 @@ class StudentController extends Controller
         return view('students.index', compact('students', 'classes'));
     }
 
+    public function searchList() {
+        $classes = SchoolClass::where('status', 'active')->get();
+        return view('students.searchlist', compact('classes'));
+    }
+
+    public function studentListResult(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required|integer|exists:school_classes,id',
+            'class_arm_id' => 'required|integer|exists:class_arms,id',
+        ]);
+
+        $students = Student::where('school_class_id', $request->class_id)
+            ->where('class_arm', $request->class_arm_id)
+            ->whereNull('graduated_at')
+            ->get();
+
+        $className = $students->isNotEmpty() ? $students->first()->schoolClass->name : '';
+        $classArmName = $students->isNotEmpty() ? $students->first()->classArm->name : '';
+
+        return view('students.studentlist', compact('students', 'className', 'classArmName'));
+    }
+
 
 
 

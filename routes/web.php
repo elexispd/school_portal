@@ -90,6 +90,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/students/result', [App\Http\Controllers\StudentController::class, 'studentResult'])
         ->name('students.result');
 
+    Route::get('/students/searchList', [App\Http\Controllers\StudentController::class, 'searchList'])
+        ->name('students.list');
+    Route::get('/students/studentList', [App\Http\Controllers\StudentController::class, 'studentListResult'])
+        ->name('students.studentListResult');
+
     Route::resource('students', App\Http\Controllers\StudentController::class)
         ->names([
             'index' => 'students.search',
