@@ -41,6 +41,7 @@
                         <option value="1">First Term</option>
                         <option value="2">Second Term</option>
                         <option value="3">Third Term</option>
+                        <option value="4">Annual</option>
                     </select>
                 </div>
 

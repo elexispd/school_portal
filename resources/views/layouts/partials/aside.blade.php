@@ -38,19 +38,7 @@
         </ul>
       </li><!-- End Staff Nav -->
 
-      <li class="nav-heading">Result Component</li>
 
-      <li class="nav-item">
-        <a class="nav-link collapsed"  href="{{ route('resumptions.create') }}">
-          <i class="bi bi-clock-fill"></i><span>Resumption</span><i class="ms-auto"></i>
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link collapsed"  href="{{ route('vacations.create') }}">
-          <i class="bi bi-clock-history"></i><span>Closing Date</span><i class="ms-auto"></i>
-        </a>
-      </li>
 
       <li class="nav-heading">Users</li>
 
@@ -195,7 +183,19 @@
         </ul>
       </li><!-- End Results Nav -->
 
+      <li class="nav-heading">Result Component</li>
 
+      <li class="nav-item">
+        <a class="nav-link collapsed"  href="{{ route('resumptions.create') }}">
+          <i class="bi bi-clock-fill"></i><span>Resumption</span><i class="ms-auto"></i>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link collapsed"  href="{{ route('vacations.create') }}">
+          <i class="bi bi-clock-history"></i><span>Closing Date</span><i class="ms-auto"></i>
+        </a>
+      </li>
 
 
 

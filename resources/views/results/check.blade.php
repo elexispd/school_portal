@@ -117,6 +117,7 @@
                 <option value="1">1st Term</option>
                 <option value="2">2nd Term</option>
                 <option value="3">3rd Term</option>
+                <option value="4">Annual</option>
               </select>
             </div>
 

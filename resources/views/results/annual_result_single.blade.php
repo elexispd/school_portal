@@ -23,7 +23,6 @@
             margin: 10px auto;
             text-align: center;
             padding: 10px;
-            page-break-after: always; /* ✅ Each student on a new page */
         }
 
         .header {
@@ -135,7 +134,6 @@
         .summary {
             display: flex;
             justify-content: space-between;
-
         }
 
         .summary table {
@@ -176,9 +174,6 @@
 </head>
 
 <body>
-
-
-    @foreach ($studentResults as $data)
     <div class="container">
         <div class="main">
             <div class="header">
@@ -188,9 +183,10 @@
                 <div class="school-name">
                     <h1>{{ config('app.school_name') }}</h1>
                     <p><b>Motto:</b> Love, Service and Sacrifice |
-                       <b>Email:</b> info@exampleschool.com |
-                       <b>Phone:</b> xxxxxxx</p>
-                    <h2>**BASIC PUPILS <b>TERMLY</b> REPORT**</h2>
+                        <b>Email:</b> info@exampleschool.com |
+                        <b>Phone:</b> xxxxxxx
+                    </p>
+                    <h2>**BASIC PUPILS <b>{{ $request->term == 4 ? 'ANNUAL' : ucfirst($request->term) . ' Term' }}</b> REPORT**</h2>
                 </div>
                 <div class="profile-image">
                     <i class="ri-user-3-fill"></i>
@@ -198,32 +194,32 @@
             </div>
 
             <div class="contacts">
-                <h2>{{ $data['student']->getFullNameAttribute() }}</h2>
-                <p><b>Admission Number:</b> {{ $data['student']->admission_number }} |
-                   <b>Portal Code:</b> {{ $data['student']->result_pin }} |
-                   <b>Status:</b> Active</p>
+                <h2>{{ $student->getFullNameAttribute() }}</h2>
+                <p><b>Admission Number:</b> {{ $student->admission_number }} |
+                    <b>Portal Code:</b> {{ $student->result_pin }} |
+                    <b>Status:</b> Active
+                </p>
             </div>
 
             <div class="section">
                 <div class="first-section">
                     <p>
-                        <b>Term:</b> {{ $data['results'][0]->term($data['results'][0]->term) }} <br>
-                        <b>Session:</b> {{ $data['results'][0]->getSessionName() }} <br>
-                        <b>Gender:</b> {{ ucwords($data['student']->gender) }} <br>
+                        <b>Term:</b> Annual <br>
+                        <b>Session:</b> {{ $request->session_id }} <br>
+                        <b>Gender:</b> {{ ucwords($student->gender) }} <br>
                     </p>
                 </div>
                 <div class="second-section">
                     <p>
-                        <b>Class:</b> {{ $data['results'][0->getClassName()] }} <br>
-                        <b>No in Class:</b> {{ $totalStudentsInClass }} <br>
-                        <b>No. in Clas Arm:</b> {{ $totalStudentsInClassArm }}
+                        <b>Class: </b> {{ $class }}  <br>
+                        <b>No in Class:</b> {{ $totalStudentsInClass ?? '-' }} <br>
+                        <b>No. in Clas Arm:</b> {{ $totalStudentsInClassArm ?? '-' }}
                     </p>
                 </div>
                 <div class="third-section">
                     <p>
-                        <b>Performance Average (PA):</b> {{ number_format($data['average'], 2) }} <br>
-                        <b>Position:</b> {{ getOrdinal($data['position']) }} <br>
-                        <b>Vacation Date:</b> {{ $vacation?->date?->format('jS F, Y') }} <br>
+                        <b>Performance Average (PA):</b> {{ number_format($average, 2) }} <br>
+                        <b>Position:</b> {{ getOrdinal($position) }} <br>
                     </p>
                 </div>
             </div>
@@ -233,27 +229,46 @@
                 <table border="1">
                     <tr>
                         <th>SUBJECTS</th>
-                        <th>Test (40%)</th>
-                        <th>Exam (60%)</th>
-                        <th>Total (100%)</th>
-                        <th>Grade</th>
-                        <th>Remark</th>
-                        <th>Pos.</th>
-                        <th>Max. Score</th>
+                        @if ($request->term == 4)
+                            <th>1st Term</th>
+                            <th>2nd Term</th>
+                            <th>3rd Term</th>
+                            <th>Total</th>
+                            <th>Grade</th>
+                            <th>Remark</th>
+                            <th>Average</th>
+                            <th>Annual Position</th>
+                        @else
+                            <th>Score</th>
+                            <th>Grade</th>
+                            <th>Remark</th>
+                        @endif
                     </tr>
 
-                    @foreach ($data['results'] as $result)
-                    <tr>
-                        <td>{{ $result->subject->name }}</td>
-                        <td>{{ $result->ca }}</td>
-                        <td>{{ $result->exam }}</td>
-                        <td>{{ $result->total }}</td>
-                        <td>{{ $result->grade }}</td>
-                        <td>{{ $result->getRemark($result->total) }}</td>
-                        <td>{{ $result->ordinate($result->position) }}</td>
-                        <td>{{ $result->class_highest_score }}</td>
-                    </tr>
-                    @endforeach
+                    @if ($request->term == 4)
+                        @foreach ($annualResults as $subjectResult)
+                            <tr>
+                                <td>{{ $subjectResult['subject']->name }}</td>
+                                <td>{{ $subjectResult['first_term'] ?? '-' }}</td>
+                                <td>{{ $subjectResult['second_term'] ?? '-' }}</td>
+                                <td>{{ $subjectResult['third_term'] ?? '-' }}</td>
+                                <td>{{ $subjectResult['total'] }}</td>
+                                <td>{{ $subjectResult['grade'] }}</td>
+                                <td>{{ $subjectResult['remark'] }}</td>
+                                <td>{{ number_format($subjectResult['average'], 2) }}</td>
+                                <td>{{ isset($subjectResult['position']) ? getOrdinal($subjectResult['position']) : '-' }}</td>
+                            </tr>
+                        @endforeach
+                    @else
+                        @foreach ($results as $result)
+                            <tr>
+                                <td>{{ $result->subject->name }}</td>
+                                <td>{{ $result->total }}</td>
+                                <td>{{ $this->calculateGrade($result->total) }}</td>
+                                <td>{{ $this->getRemark($result->total) }}</td>
+                            </tr>
+                        @endforeach
+                    @endif
                 </table>
             </div>
 
@@ -279,21 +294,19 @@
 
             <h3 class="summary-title">Summary</h3>
             <div class="summary">
-
                 <table border="1">
                     <tr>
                         <td><b>TOTAL SCORE:</b></td>
-                        <td>{{ $data['total_score'] }}</td>
+                        <td>{{ $totalScore ?? '-' }}</td>
                         <td><b>AVG SCORE:</b></td>
-                        <td>{{ number_format($data['average'], 2) }}%</td>
+                        <td>{{ number_format($average, 2) }}%</td>
                         <td><b>REMARK:</b></td>
                         <td><b>STATUS:</b></td>
                         <td></td>
                     </tr>
                     <tr>
                         <td colspan="7">
-                            <p> <b>Form Teacher's Comment:</b> My Dear, Outstanding achievement! Your hard work and
-                                skills have truly shone through, Keep aiming high and breaking new ground!</p>
+                            <p><b>Form Teacher's Comment:</b> My Dear, Outstanding achievement! Keep aiming high and breaking new ground!</p>
                         </td>
                     </tr>
                 </table>
@@ -301,14 +314,13 @@
                     <img src="{{ asset('assets/img/stamp.png') }}" alt="">
                     <p>Name of Principal</p>
                 </div>
-
             </div>
-            <div class="footer" sty>
-                <p><b>Resumption Date: {{ $resumption?->date?->format('jS F, Y') }}</b></p>
+
+            <div class="footer">
+                {{-- <p><b>Resumption Date: {{ $resumption?->date?->format('jS F, Y') }}</b></p> --}}
             </div>
         </div>
     </div>
-    @endforeach
-
 </body>
+
 </html>
