@@ -349,6 +349,7 @@ class ResultController extends Controller
 
     protected function printTermly(Request $request)
     {
+        // Fetch only arm’s results for display
         $results = Result::where('school_class_id', $request->school_class_id)
             ->where('class_arm_id', $request->class_arm_id)
             ->where('term', $request->term)
@@ -356,66 +357,7 @@ class ResultController extends Controller
             ->with(['student', 'session', 'schoolClass', 'classArm', 'subject'])
             ->get();
 
-        $counts = Student::selectRaw("
-        COUNT(*) as total_students_in_class,
-        SUM(CASE WHEN class_arm = ? THEN 1 ELSE 0 END) as total_students_in_class_arm
-    ", [$request->class_arm_id])
-            ->where('school_class_id', $request->school_class_id)
-            ->first();
-
-        $studentResults = [];
-
-        foreach ($results as $result) {
-            $studentId = $result->student_id;
-            if (!isset($studentResults[$studentId])) {
-                $studentResults[$studentId] = [
-                    'student' => $result->student,
-                    'total_score' => 0,
-                    'subject_count' => 0,
-                    'results' => [],
-                ];
-            }
-
-            $studentResults[$studentId]['results'][] = $result;
-            $studentResults[$studentId]['total_score'] += $result->total;
-            $studentResults[$studentId]['subject_count']++;
-        }
-
-        foreach ($studentResults as $studentId => $data) {
-            $studentResults[$studentId]['average'] = $data['total_score'] / $data['subject_count'];
-        }
-
-        usort($studentResults, fn($a, $b) => $b['total_score'] - $a['total_score']);
-        foreach ($studentResults as $position => $data) {
-            $studentResults[$position]['position'] = $position + 1;
-        }
-
-        $resumption = \App\Models\Resumption::where('session_id', $request->session_id)
-            ->where('term', $request->term)->first();
-
-        $vacation = \App\Models\Vacation::where('session_id', $request->session_id)
-            ->where('term', $request->term)->first();
-
-        return view('results.result', [
-            'studentResults' => $studentResults,
-            'request' => $request,
-            'totalStudentsInClassArm' => $counts->total_students_in_class_arm,
-            'totalStudentsInClass' => $counts->total_students_in_class,
-            'resumption' => $resumption,
-            'vacation' => $vacation
-        ]);
-    }
-
-
-    protected function printAnnual(Request $request)
-    {
-        $results = Result::where('school_class_id', $request->school_class_id)
-            ->where('class_arm_id', $request->class_arm_id)
-            ->whereIn('term', [1, 2, 3]) // ✅ All terms
-            ->where('session_id', $request->session_id)
-            ->with(['student', 'subject', 'session', 'schoolClass'])
-            ->get();
-
+        // Counts
         $counts = Student::selectRaw("
         COUNT(*) as total_students_in_class,
         SUM(CASE WHEN class_arm = ? THEN 1 ELSE 0 END) as total_students_in_class_arm
@@ -427,16 +369,91 @@ class ResultController extends Controller
 
         foreach ($results as $result) {
             $sid = $result->student_id;
-            $subj = $result->subject_id;
-
             if (!isset($studentResults[$sid])) {
                 $studentResults[$sid] = [
                     'student'       => $result->student,
                     'total_score'   => 0,
                     'subject_count' => 0,
+                    'results'       => [],
+                ];
+            }
+
+            $studentResults[$sid]['results'][] = $result;
+            $studentResults[$sid]['total_score'] += $result->total;
+            $studentResults[$sid]['subject_count']++;
+        }
+
+        foreach ($studentResults as $sid => &$data) {
+            $data['average'] = $data['subject_count'] > 0
+                ? $data['total_score'] / $data['subject_count']
+                : 0;
+        }
+
+        // ✅ Overall class positioning (ignore arm)
+        $allResults = Result::where('school_class_id', $request->school_class_id)
+            ->where('session_id', $request->session_id)
+            ->where('term', $request->term)
+            ->selectRaw('student_id, SUM(total) as total_score')
+            ->groupBy('student_id')
+            ->orderByDesc('total_score')
+            ->get();
+
+        // Assign class-wide positions to only the arm’s students
+        foreach ($studentResults as $sid => &$data) {
+            $rank = $allResults->search(fn($row) => $row->student_id == $sid);
+            $data['position'] = $rank !== false ? $rank + 1 : null;
+        }
+
+        $resumption = \App\Models\Resumption::where('session_id', $request->session_id)
+            ->where('term', $request->term)->first();
+
+        $vacation = \App\Models\Vacation::where('session_id', $request->session_id)
+            ->where('term', $request->term)->first();
+
+        return view('results.result', [
+            'studentResults'          => $studentResults,
+            'request'                 => $request,
+            'totalStudentsInClassArm' => $counts->total_students_in_class_arm,
+            'totalStudentsInClass'    => $counts->total_students_in_class,
+            'resumption'              => $resumption,
+            'vacation'                => $vacation
+        ]);
+    }
+
+
+
+    protected function printAnnual(Request $request)
+    {
+        // Fetch only arm’s results for display
+        $results = Result::where('school_class_id', $request->school_class_id)
+            ->where('class_arm_id', $request->class_arm_id)
+            ->whereIn('term', [1, 2, 3])
+            ->where('session_id', $request->session_id)
+            ->with(['student', 'subject', 'session', 'schoolClass'])
+            ->get();
+
+        // Counts
+        $counts = Student::selectRaw("
+        COUNT(*) as total_students_in_class,
+        SUM(CASE WHEN class_arm = ? THEN 1 ELSE 0 END) as total_students_in_class_arm
+    ", [$request->class_arm_id])
+            ->where('school_class_id', $request->school_class_id)
+            ->first();
+
+        $studentResults = [];
+
+        foreach ($results as $result) {
+            $sid  = $result->student_id;
+            $subj = $result->subject_id;
+
+            if (!isset($studentResults[$sid])) {
+                $studentResults[$sid] = [
+                    'student'        => $result->student,
+                    'total_score'    => 0,
+                    'subject_count'  => 0,
                     'annual_results' => [],
-                    'session_name'  => $result->session->name ?? '',
-                    'class_name'    => $result->schoolClass->name ?? '',
+                    'session_name'   => $result->session->name ?? '',
+                    'class_name'     => $result->schoolClass->name ?? '',
                 ];
             }
 
@@ -450,16 +467,14 @@ class ResultController extends Controller
                     'average'     => 0,
                     'grade'       => null,
                     'remark'      => null,
-                    'position'    => null, // ✅ placeholder for subject position
+                    'position'    => null,
                 ];
             }
 
-            // Assign term scores
             if ($result->term == 1) $studentResults[$sid]['annual_results'][$subj]['first_term'] = $result->total;
             if ($result->term == 2) $studentResults[$sid]['annual_results'][$subj]['second_term'] = $result->total;
             if ($result->term == 3) $studentResults[$sid]['annual_results'][$subj]['third_term'] = $result->total;
 
-            // Recalculate subject total
             $subjectTotal = (
                 ($studentResults[$sid]['annual_results'][$subj]['first_term'] ?? 0) +
                 ($studentResults[$sid]['annual_results'][$subj]['second_term'] ?? 0) +
@@ -474,7 +489,7 @@ class ResultController extends Controller
             $studentResults[$sid]['annual_results'][$subj]['remark']  = $this->getRemark($subjectAverage);
         }
 
-        // Finalize totals & averages per student
+        // Totals & averages per student
         foreach ($studentResults as $sid => &$data) {
             $data['total_score']   = array_sum(array_column($data['annual_results'], 'total'));
             $data['subject_count'] = count($data['annual_results']);
@@ -483,37 +498,43 @@ class ResultController extends Controller
                 : 0;
         }
 
-        // ✅ SUBJECT-WISE POSITIONING
+        // ✅ Subject-wise positioning (based on whole class, ignore arm)
         $subjectWise = [];
-
-        // Collect scores by subject
-        foreach ($studentResults as $sid => &$data) {
+        foreach ($studentResults as $sid => $data) {
             foreach ($data['annual_results'] as $subjId => $subjData) {
                 $subjectWise[$subjId][$sid] = $subjData['total'];
             }
         }
-
-        // Rank students for each subject
         foreach ($subjectWise as $subjId => $scores) {
-            arsort($scores); // highest → lowest
+            arsort($scores);
             $pos = 1;
             foreach ($scores as $sid => $score) {
                 $studentResults[$sid]['annual_results'][$subjId]['position'] = $pos++;
             }
         }
 
-        // ✅ Overall class positioning by total_score
-        usort($studentResults, fn($a, $b) => $b['total_score'] <=> $a['total_score']);
-        foreach ($studentResults as $pos => &$data) {
-            $data['position'] = $pos + 1;
+        // ✅ Overall positioning by total_score (class-wide, not arm)
+        $allResults = Result::where('school_class_id', $request->school_class_id)
+            ->where('session_id', $request->session_id)
+            ->whereIn('term', [1, 2, 3])
+            ->selectRaw('student_id, SUM(total) as total_score')
+            ->groupBy('student_id')
+            ->orderByDesc('total_score')
+            ->get();
+
+        foreach ($studentResults as $sid => &$data) {
+            $rank = $allResults->search(fn($row) => $row->student_id == $sid);
+            $data['position'] = $rank !== false ? $rank + 1 : null;
         }
+
         return view('results.annual_result', [
-            'studentResults'           => $studentResults,
-            'request'                  => $request,
-            'totalStudentsInClassArm'  => $counts->total_students_in_class_arm,
-            'totalStudentsInClass'     => $counts->total_students_in_class,
+            'studentResults'          => $studentResults,
+            'request'                 => $request,
+            'totalStudentsInClassArm' => $counts->total_students_in_class_arm,
+            'totalStudentsInClass'    => $counts->total_students_in_class,
         ]);
     }
+
 
 
 
@@ -698,7 +719,7 @@ class ResultController extends Controller
             return back()->withErrors(['pin' => 'Invalid Scratch Card Pin']);
         }
 
-        // fetch results for that student
+        // fetch results for that student (still scoped to class arm so they only see their arm’s results)
         $results = Result::where('student_id', $student->id)
             ->where('school_class_id', $request->class_id)
             ->where('class_arm_id', $request->classarm_id)
@@ -716,9 +737,8 @@ class ResultController extends Controller
         $subjectCount = $results->count();
         $average      = $subjectCount > 0 ? $totalScore / $subjectCount : 0;
 
-        // calculate position within class arm
+        // ✅ calculate position within CLASS (ignore class_arm)
         $allResults = Result::where('school_class_id', $request->class_id)
-            ->where('class_arm_id', $request->classarm_id)
             ->where('session_id', $request->session_id)
             ->where('term', $request->term)
             ->selectRaw('student_id, SUM(total) as total_score')
@@ -738,11 +758,13 @@ class ResultController extends Controller
         $vacation = \App\Models\Vacation::where('session_id', $request->session_id)
             ->where('term', $request->term)
             ->first();
+
+        // Arm-based count (keep for display)
         $totalStudentsInClassArm = Student::where('school_class_id', $request->class_id)
             ->where('class_arm', $request->classarm_id)
             ->count('id');
 
-        // Calculate the total number of students in the entire class (without class arm filter)
+        // ✅ Total number of students in the class (used for position)
         $totalStudentsInClass = Student::where('school_class_id', $request->class_id)
             ->count('id');
 
@@ -767,10 +789,10 @@ class ResultController extends Controller
             return back()->withErrors(['pin' => 'Invalid Scratch Card Pin']);
         }
 
-        // ✅ fetch annual results (terms 1–3)
+        // ✅ fetch annual results (terms 1–3) for this student
         $results = Result::where('student_id', $student->id)
             ->where('school_class_id', $request->class_id)
-            ->where('class_arm_id', $request->classarm_id)
+            ->where('class_arm_id', $request->classarm_id) // still show their arm’s results
             ->where('session_id', $request->session_id)
             ->whereIn('term', [1, 2, 3])
             ->with(['student', 'session', 'schoolClass', 'classArm', 'subject'])
@@ -817,10 +839,9 @@ class ResultController extends Controller
             $annualResults[$subj]['remark']  = $this->getRemark($subjectAverage);
         }
 
-        // ✅ subject positioning (rank per subject in this class + arm)
+        // ✅ subject positioning (rank per subject in the CLASS, ignore class_arm)
         foreach ($annualResults as $subjId => &$subjectData) {
             $subjectScores = Result::where('school_class_id', $request->class_id)
-                ->where('class_arm_id', $request->classarm_id)
                 ->where('session_id', $request->session_id)
                 ->where('subject_id', $subjId)
                 ->whereIn('term', [1, 2, 3])
@@ -832,16 +853,15 @@ class ResultController extends Controller
             $rank = $subjectScores->search(fn($row) => $row->student_id == $student->id);
             $subjectData['position'] = $rank !== false ? $rank + 1 : null;
         }
-        unset($subjectData); // break reference
+        unset($subjectData);
 
         // ✅ totals & averages (overall)
         $totalScore   = array_sum(array_column($annualResults, 'total'));
         $subjectCount = count($annualResults);
         $average      = $subjectCount > 0 ? $totalScore / ($subjectCount * 3) : 0;
 
-        // ✅ overall class positioning
+        // ✅ overall class positioning (ignore class_arm)
         $allResults = Result::where('school_class_id', $request->class_id)
-            ->where('class_arm_id', $request->classarm_id)
             ->where('session_id', $request->session_id)
             ->whereIn('term', [1, 2, 3])
             ->selectRaw('student_id, SUM(total) as total_score')
@@ -853,7 +873,6 @@ class ResultController extends Controller
             ->where('class_arm', $request->classarm_id)
             ->count('id');
 
-        // Calculate the total number of students in the entire class (without class arm filter)
         $totalStudentsInClass = Student::where('school_class_id', $request->class_id)
             ->count('id');
 

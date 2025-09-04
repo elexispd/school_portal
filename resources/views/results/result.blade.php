@@ -214,7 +214,7 @@
                 </div>
                 <div class="second-section">
                     <p>
-                        <b>Class:</b> {{ $data['results'][0->getClassName()] }} <br>
+                        <b>Class:</b> {{ $data['results'][0]->getClassName() }} <br>
                         <b>No in Class:</b> {{ $totalStudentsInClass }} <br>
                         <b>No. in Clas Arm:</b> {{ $totalStudentsInClassArm }}
                     </p>
