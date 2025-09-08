@@ -18,14 +18,14 @@
                     @if($student->result)
                         <input type="number" name="students[{{ $student->id }}][ca]" value="{{ $student->result->ca }}" max="40" class="form-control" disabled />
                     @else
-                        <input type="number" name="students[{{ $student->id }}][ca]" max="40" class="form-control" required />
+                        <input type="number" name="students[{{ $student->id }}][ca]" max="40" class="form-control"  />
                     @endif
                 </td>
                 <td>
                     @if($student->result)
                         <input type="number" name="students[{{ $student->id }}][exam]" value="{{ $student->result->exam }}" max="60" class="form-control" disabled />
                     @else
-                        <input type="number" name="students[{{ $student->id }}][exam]" max="60" class="form-control" required />
+                        <input type="number" name="students[{{ $student->id }}][exam]" max="60" class="form-control"  />
                     @endif
                 </td>
             </tr>

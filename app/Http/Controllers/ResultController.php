@@ -117,20 +117,21 @@ class ResultController extends Controller
 
     public function fetchSubjects(Request $request)
     {
-
         // Validate incoming request data
         $validated = $request->validate([
             'school_class_id' => 'required|exists:school_classes,id',
             'class_arm_id'    => 'required|exists:class_arms,id',
             'subject_id'      => 'required|exists:subjects,id',
-            'session_id'      => 'required|exists:sessions,id'
+            'session_id'      => 'required|exists:sessions,id',
+            'term'            => 'required|integer',
         ]);
 
-        // Fetch results for the specific subject, class, and arm
+        // Fetch results for the specific subject, session, class, arm, and term
         $results = Result::where('subject_id', $request->subject_id)
             ->where('school_class_id', $request->school_class_id)
             ->where('session_id', $request->session_id)
             ->where('class_arm_id', $request->class_arm_id)
+            ->where('term', $request->term)
             ->get();
 
         // Add student data to each result object
@@ -142,6 +143,7 @@ class ResultController extends Controller
             'results' => $results,
         ]);
     }
+
 
     public function edit(Result $result)
     {
@@ -162,27 +164,28 @@ class ResultController extends Controller
             'class_arm_id'    => 'required|exists:class_arms,id',
         ]);
 
+
         $total = (int)($request->ca ?? 0) + (int)($request->exam ?? 0);
 
         $result->update([
             'ca'   => $request->ca,
             'exam' => $request->exam,
             'total' => $total,
-            'grade' => $this->calculateGrade($total),
+            'grade' => $this->calculateGrade($total)
 
             // these are usually fixed after creation,
             // but if you allow editing, keep them
-            'subject_id'      => $request->subject_id,
-            'session_id'      => $request->session_id,
-            'term'            => $request->term,
-            'school_class_id' => $request->school_class_id,
-            'class_arm_id'    => $request->class_arm_id,
+            // 'subject_id'      => $request->subject_id,
+            // 'session_id'      => $request->session_id,
+            // 'term'            => $request->term,
+            // 'school_class_id' => $request->school_class_id,
+            // 'class_arm_id'    => $request->class_arm_id,
         ]);
 
         $this->updateClassStatistics($request);
 
         return redirect()
-            ->route('results.edit', $result->subject_id)
+            ->route('results.edit', $result->id)
             ->with('success', 'Result updated successfully!');
     }
 
